@@ -1,0 +1,29 @@
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id    String @id @default(cuid())
+  email String @unique
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  accountId String @unique
+  accessToken String @unique
+  schedulerPages Page []
+}
+
+model Page {
+  id    String @id @default(cuid())
+  pageId String @unique
+  pageSlug String @unique
+  user User @relation(fields:[accountId], references: [accountId], onDelete: Cascade, onUpdate: Cascade)
+  accountId String
+}
+
