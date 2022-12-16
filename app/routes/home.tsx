@@ -17,7 +17,7 @@ export default function Home() {
                 stroke="currentColor"
               >
                 <path
-                  stroke-linecap="round"
+                  strokeLinecap="round"
                   stroke-linejoin="round"
                   stroke-width="2"
                   d="M4 6h16M4 12h8m-8 6h16"
