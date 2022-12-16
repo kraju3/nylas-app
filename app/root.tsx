@@ -30,10 +30,15 @@ export async function loader({ request }: LoaderArgs) {
 
 export default function App() {
   return (
-    <html lang="en" className="h-full">
+    <html data-theme="light" lang="en" className="h-full">
       <head>
         <Meta />
         <Links />
+        <script
+          src="https://accounts.google.com/gsi/client"
+          async
+          defer
+        ></script>
       </head>
       <body className="h-full">
         <Outlet />

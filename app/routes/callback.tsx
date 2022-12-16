@@ -1,4 +1,4 @@
-import { json, LoaderArgs, MetaFunction } from "@remix-run/node";
+import { json, LoaderArgs, MetaFunction, redirect } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
 import { getToken, getUserInfo } from "~/models/google.server";
 import {
@@ -12,10 +12,8 @@ export const loader = async ({ request }: LoaderArgs) => {
   try {
     return await authNylasUser(request);
   } catch (error: any) {
-    return json({
-      error: true,
-      message: error.message,
-    });
+    console.log(error);
+    return redirect("/login");
   }
 
   //return json(await fakeProductSearch(term));

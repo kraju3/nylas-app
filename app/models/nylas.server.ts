@@ -137,7 +137,7 @@ export async function authNylasUser(request: Request) {
         request,
         userId: existingUser.id,
         remember: false,
-        redirectTo: "/",
+        redirectTo: "/home",
       });
     }
 
@@ -151,7 +151,7 @@ export async function authNylasUser(request: Request) {
       request,
       userId: user.id,
       remember: false,
-      redirectTo: "/",
+      redirectTo: "/home",
     });
   } catch (error: any) {
     throw Error(error);
