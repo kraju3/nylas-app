@@ -10,6 +10,24 @@ export async function getUserById(id: User["id"]) {
   return prisma.user.findUnique({ where: { id } });
 }
 
+export async function getUsers() {
+  return await prisma.user.findMany({
+    where: {
+      admin: false,
+    },
+  });
+}
+
+export async function getUserByEmails(emails: User["email"][]) {
+  return prisma.user.findMany({
+    where: {
+      email: {
+        in: emails,
+      },
+    },
+  });
+}
+
 export async function getUserByEmail(email: User["email"]) {
   return prisma.user.findUnique({ where: { email } });
 }
@@ -18,12 +36,14 @@ export async function createUser({
   email,
   accessToken,
   accountId,
+  isAdmin,
 }: UserInformation) {
   return prisma.user.create({
     data: {
       email,
       accountId,
       accessToken,
+      admin: isAdmin,
     },
   });
 }

@@ -4,8 +4,9 @@ import { json } from "stream/consumers";
 import { getUser } from "~/session.server";
 import { generateQueryString } from "~/utils";
 import { apiRequest } from "../api.server";
+import { User } from "../user.server";
 
-const NYLAS_ENDPOINT = `${process.env.API_ENDPOINT}/events`;
+const NYLAS_ENDPOINT = `${process.env.API_ENDPOINT}`;
 
 export type NylasEvent = {
   busy: boolean;
@@ -99,7 +100,7 @@ export async function getEvents(
   }
 
   const queryString = generateQueryString(queryParams || {});
-  let url = NYLAS_ENDPOINT;
+  let url = `${NYLAS_ENDPOINT}/events`;
   if (queryString) {
     url += `?${queryString}`;
   }
@@ -117,6 +118,27 @@ export async function getEvents(
     });
   } catch (error: any) {
     throw Error(error);
+  }
+  return res;
+}
+
+export async function getPrimaryCalendar(user: User) {
+  let res: string;
+  let url = `${NYLAS_ENDPOINT}/calendars`;
+  try {
+    const calendars: any[] = await apiRequest({
+      url,
+      config: {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${user.accessToken}`,
+        },
+      },
+    });
+    res = calendars.find((calendar) => calendar.is_primary).id;
+  } catch (error) {
+    throw Error;
   }
   return res;
 }

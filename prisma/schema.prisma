@@ -16,14 +16,18 @@ model User {
 
   accountId String @unique
   accessToken String @unique
+  admin Boolean @default(false)
   schedulerPages Page []
 }
 
 model Page {
   id    String @id @default(cuid())
-  pageId String @unique
-  pageSlug String @unique
+  pageId Int
+  pageSlug String 
+  editToken String 
   user User @relation(fields:[accountId], references: [accountId], onDelete: Cascade, onUpdate: Cascade)
   accountId String
 }
+
+
 

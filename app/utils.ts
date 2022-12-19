@@ -80,6 +80,7 @@ export type UserInformation = {
   email: string;
   accountId: string;
   accessToken: string;
+  isAdmin: boolean;
 };
 
 export type NylasAccount = {

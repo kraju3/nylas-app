@@ -50,14 +50,18 @@ interface OAuthClient {
 
 export default function LoginPage() {
   const [oAuthClient, setOAuthClient] = useState<OAuthClient>();
+  const [isAdmin, setAdmin] = useState<boolean>(true);
   const data = useLoaderData();
 
   useEffect(() => {
     if (window.google) {
-      const oAuth2Client = window.google.accounts.oauth2.initCodeClient(data);
+      const oAuth2Client = window.google.accounts.oauth2.initCodeClient({
+        ...data,
+        state: isAdmin ? "admin" : "user",
+      });
       setOAuthClient(oAuth2Client);
     }
-  }, [setOAuthClient]);
+  }, [setOAuthClient, isAdmin]);
 
   return (
     <>
@@ -69,6 +73,17 @@ export default function LoginPage() {
               oAuthClient?.requestCode();
             }}
           ></GoogleButton>
+        </div>
+        <div className="mx-auto w-full max-w-md px-8">
+          <label className="label cursor-pointer">
+            <span className="label-text">Admin</span>
+            <input
+              onChange={(e) => setAdmin((val) => !val)}
+              type="checkbox"
+              className="toggle-accent toggle"
+              checked={isAdmin}
+            />
+          </label>
         </div>
       </div>
     </>
