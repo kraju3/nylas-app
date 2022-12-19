@@ -20,30 +20,31 @@ export async function loader({
 export default function Message() {
   const { folders } = useLoaderData();
   return (
-    <div className="container mt-5 flex w-full flex-row shadow-lg">
-      <div className="drawer mb-5">
-        <input id="my-drawer" type="checkbox" className="drawer-toggle" />
-        <div className="drawer-content">
-          <label htmlFor="my-drawer" className="drawer-button btn btn bg-black">
-            Folders
-          </label>
-        </div>
-        <div className="drawer-side">
-          <label htmlFor="my-drawer" className="drawer-overlay"></label>
-          <ul className="menu w-80 bg-base-100 p-4 text-base-content">
-            {folders.map((folder: any, index: number) => {
-              return (
-                <li>
-                  <Link to={`/home/message/folders/${folder.name}`}>
-                    {folder.display_name}
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
-        </div>
+    <>
+      <div className="dropdown dropdown-end mt-5 p-0">
+        <label tabIndex={0} className="btn m-1 shadow-lg">
+          Folders
+        </label>
+        <ul
+          tabIndex={0}
+          className="dropdown-content menu rounded-box w-52 bg-base-100 p-2 shadow"
+        >
+          {folders.map((folder: any, index: number) => {
+            return (
+              <li key={index.toString()}>
+                <Link
+                  key={index.toString()}
+                  to={`/home/message/folders/${folder.name}`}
+                >
+                  {folder.display_name}
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
       </div>
+
       <Outlet />
-    </div>
+    </>
   );
 }

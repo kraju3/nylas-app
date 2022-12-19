@@ -16,20 +16,21 @@ export async function loader({ request, params }: LoaderArgs) {
   return json<LoaderData>({
     threads: await getThreads(request, {
       in: folderName,
-      unread: true,
     }),
   });
 }
 
 function ThreadComponent({ thread }: ThreadProps) {
   return (
-    <div className="card w-96 bg-base-100 shadow-xl">
+    <div className="neutral-content card m-5 w-96 bg-base-100 shadow-xl">
       <div className="card-body">
-        <h2 className="card-title">
+        <h2 className="card-title overflow-hidden text-ellipsis">
           {thread.subject}
-          <div className="badge-secondary badge">{"Unread"}</div>
+          {thread.unread && (
+            <div className="badge-secondary badge bg-red-600">{"Unread"}</div>
+          )}
         </h2>
-        <p>{thread.snippet}</p>
+        <p className={"overflow-hidden text-ellipsis"}>{thread.snippet}</p>
         <div className="card-actions justify-end">
           <div className="badge-outline badge">Fashion</div>
           <div className="badge-outline badge">Products</div>
@@ -42,7 +43,7 @@ function ThreadComponent({ thread }: ThreadProps) {
 export default function Folder() {
   const { threads } = useLoaderData() as LoaderData;
   return (
-    <div className="container md:mx-auto">
+    <div className="center flex w-full flex-wrap justify-center md:container md:mx-auto">
       {threads.map((thread) => (
         <ThreadComponent thread={thread} />
       ))}

@@ -10,6 +10,7 @@ import {
 } from "@remix-run/react";
 
 import tailwindStylesheetUrl from "./styles/tailwind.css";
+import "@toast-ui/calendar/dist/toastui-calendar.min.css";
 import { getUser } from "./session.server";
 
 export const links: LinksFunction = () => {

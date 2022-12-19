@@ -4,8 +4,8 @@ import { useUser } from "~/utils";
 export default function Home() {
   const user = useUser();
   return (
-    <div className="container mt-1 md:mx-auto">
-      <div className="... navbar rounded-lg bg-base-100 shadow-lg">
+    <div className="mt-1 w-full md:container md:mx-auto">
+      <div className="... container navbar w-full rounded-lg bg-base-100 shadow-lg">
         <div className="navbar-start">
           <div className="dropdown">
             <label tabIndex={0} className="btn-ghost btn lg:hidden">
@@ -18,8 +18,8 @@ export default function Home() {
               >
                 <path
                   strokeLinecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
                   d="M4 6h16M4 12h8m-8 6h16"
                 />
               </svg>
