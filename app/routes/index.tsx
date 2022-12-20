@@ -1,9 +1,15 @@
-import { LoaderArgs, MetaFunction, redirect } from "@remix-run/node";
+import {
+  ActionArgs,
+  LoaderArgs,
+  MetaFunction,
+  redirect,
+} from "@remix-run/node";
 import { json } from "@remix-run/node";
-import { useLoaderData, useSearchParams } from "@remix-run/react";
+import { Form, useLoaderData, useSearchParams } from "@remix-run/react";
 import { useEffect, useState } from "react";
 import GoogleButton from "react-google-button";
-import { getUser } from "~/session.server";
+import { getUserByEmail } from "~/models/user.server";
+import { createUserSession, getUser } from "~/session.server";
 
 declare global {
   interface Window {
@@ -67,6 +73,14 @@ export default function LoginPage() {
           </div>
           <div className="card w-full max-w-sm flex-shrink-0 bg-base-100 shadow-2xl">
             <div className="card-body">
+              <div className="flex min-h-full flex-col justify-center">
+                <Form method="post" action="/admin/login">
+                  <button type="submit" className="btn">
+                    Log in Test Admin
+                  </button>
+                </Form>
+              </div>
+              <div className="divider"></div>
               <div className="flex min-h-full flex-col justify-center">
                 <div className="mx-auto w-full max-w-md px-8">
                   <GoogleButton
