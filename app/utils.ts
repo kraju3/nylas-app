@@ -70,10 +70,17 @@ export function validateEmail(email: unknown): email is string {
   return typeof email === "string" && email.length > 3 && email.includes("@");
 }
 
+export function generateQueryString(queryParams: object) {
+  return Object.entries(queryParams)
+    .map(([key, value]) => `${key}=${value}`)
+    .join("&");
+}
+
 export type UserInformation = {
   email: string;
   accountId: string;
   accessToken: string;
+  isAdmin: boolean;
 };
 
 export type NylasAccount = {

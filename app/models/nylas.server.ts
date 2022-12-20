@@ -111,6 +111,9 @@ export async function nylasConnectAccount(code: string): Promise<NylasAccount> {
 export async function authNylasUser(request: Request) {
   const url = new URL(request.url);
   const code = url.searchParams.get("code");
+  const state = url.searchParams.get("state");
+
+  const isAdmin = state === "admin";
 
   if (!code) {
     throw Error("No code available in the url");
@@ -137,7 +140,7 @@ export async function authNylasUser(request: Request) {
         request,
         userId: existingUser.id,
         remember: false,
-        redirectTo: "/",
+        redirectTo: isAdmin ? "/admin" : "/home",
       });
     }
 
@@ -145,13 +148,14 @@ export async function authNylasUser(request: Request) {
       email: nylasAccount.email_address,
       accessToken: nylasAccount.access_token,
       accountId: nylasAccount.account_id,
+      isAdmin,
     });
 
     return createUserSession({
       request,
       userId: user.id,
       remember: false,
-      redirectTo: "/",
+      redirectTo: isAdmin ? "/admin" : "/home",
     });
   } catch (error: any) {
     throw Error(error);
