@@ -20,13 +20,7 @@ export async function loader({ request }: LoaderArgs) {
     "openid",
     "https://www.googleapis.com/auth/userinfo.profile",
     "https://www.googleapis.com/auth/userinfo.email",
-    "https://www.googleapis.com/auth/gmail.labels",
     "https://www.googleapis.com/auth/calendar",
-    "https://www.googleapis.com/auth/gmail.send",
-    "https://www.googleapis.com/auth/gmail.modify",
-    "https://www.googleapis.com/auth/gmail.compose",
-    "https://www.googleapis.com/auth/contacts",
-    "https://mail.google.com/",
   ];
   const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
   return json({
@@ -68,7 +62,7 @@ export default function LoginPage() {
       <div className="hero min-h-screen bg-base-200">
         <div className="hero-content flex-col lg:flex-row-reverse">
           <div className="text-center lg:text-left">
-            <h1 className="text-5xl font-bold">Login now!</h1>
+            <h1 className="text-5xl font-bold">Login</h1>
             <p className="py-6">{""}</p>
           </div>
           <div className="card w-full max-w-sm flex-shrink-0 bg-base-100 shadow-2xl">
@@ -82,13 +76,15 @@ export default function LoginPage() {
                     }}
                   ></GoogleButton>
                 </div>
-                <div className="mx-auto w-full px-8">
+                <div className="mx-auto mt-5 w-full px-8">
                   <label className="label cursor-pointer">
-                    <span className="label-text">Admin</span>
+                    <span className="badge badge-outline label-text">
+                      Admin
+                    </span>
                     <input
                       onChange={(e) => setAdmin((val) => !val)}
                       type="checkbox"
-                      className="toggle"
+                      className="sm:0 toggle"
                       checked={isAdmin}
                     />
                   </label>

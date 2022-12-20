@@ -13,7 +13,7 @@ export const loader = async ({ request }: LoaderArgs) => {
     return await authNylasUser(request);
   } catch (error: any) {
     console.log(error);
-    return redirect("/login");
+    return redirect("/");
   }
 
   //return json(await fakeProductSearch(term));

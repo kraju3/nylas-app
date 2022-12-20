@@ -21,7 +21,12 @@ export default function Meeting() {
                 <div className="card-body">
                   <h2 className="card-title">Company Hiring</h2>
                   <div className="card-actions justify-end">
-                    <input hidden name="type" value="company" type="text" />
+                    <input
+                      hidden
+                      name="type"
+                      defaultValue="company"
+                      type="text"
+                    />
                     <button type="submit" className="btn-accent btn">
                       Book
                     </button>
@@ -40,7 +45,7 @@ export default function Meeting() {
                 <div className="card-body">
                   <h2 className="card-title">Meet with an Expert</h2>
                   <div className="card-actions justify-end">
-                    <input hidden name="type" value="1:1" type="text" />
+                    <input hidden name="type" defaultValue="1:1" type="text" />
                     <button type="submit" className="btn-accent btn">
                       Book
                     </button>
