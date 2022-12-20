@@ -28,6 +28,20 @@ export async function loader({ request }: LoaderArgs) {
   });
 }
 
+export function ErrorBoundary({ error }: { error: any }) {
+  return (
+    <div className="hero min-h-screen bg-base-200">
+      <div className="hero-content flex-col lg:flex-row">
+        <img
+          alt="error page"
+          src="https://colorlib.com/wp/wp-content/uploads/sites/2/404-error-template-3.png"
+          className="max-w-sm rounded-lg shadow-2xl"
+        />
+      </div>
+    </div>
+  );
+}
+
 export default function App() {
   return (
     <html data-theme="light" lang="en" className="h-full">

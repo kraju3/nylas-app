@@ -1,7 +1,7 @@
 import { Page } from "@prisma/client";
 import { apiRequest } from "../api.server";
 import { getPrimaryCalendar } from "../events/events.server";
-import { createSchedulerPages } from "../page.server";
+import { createSchedulerPages, SchedulerPageType } from "../page.server";
 import { getUserByEmails } from "../user.server";
 
 const SCHEDULER_ENDPOINT = "https://api.schedule.nylas.com/manage/pages";
@@ -127,6 +127,7 @@ export async function createNylasSchedulerPage(
     const slug = body.get("slug") as string;
     const title = body.get("title") as string;
     const scheduling_method = body.get("scheduling_method") as string;
+    const type = body.get("scheduling_purpose") as SchedulerPageType;
 
     const emails = radioFields.map((fieldKey) =>
       body.get(fieldKey)
@@ -169,6 +170,7 @@ export async function createNylasSchedulerPage(
       pageSlug: schedulerResponse.slug,
       accountId: user.accountId,
       editToken: schedulerResponse.edit_token,
+      type,
     }));
 
     return await createSchedulerPages(pages);

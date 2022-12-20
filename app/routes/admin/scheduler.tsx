@@ -1,6 +1,7 @@
 import { ActionArgs, json, LoaderArgs } from "@remix-run/node";
 import { Form, useActionData, useLoaderData } from "@remix-run/react";
 import { createNylasSchedulerPage } from "~/models/admin/scheduler.server";
+import { SchedulerPageType } from "~/models/page.server";
 import { getUsers } from "~/models/user.server";
 
 type LoaderData = {
@@ -52,7 +53,7 @@ const TextField = ({
   return (
     <div className="form-control w-full max-w-xs">
       <label className="label">
-        <span className="label-text">{fieldName}</span>
+        <span className="badge badge-outline  label-text">{fieldName}</span>
       </label>
       <input
         name={inputName}
@@ -73,7 +74,7 @@ const RadioField = ({ radios, fieldName }: RadioFieldProps) => {
   return (
     <div className="form-control w-full max-w-xs">
       <label className="label">
-        <span className="label-text">{fieldName}</span>
+        <span className="badge badge-outline  label-text">{fieldName}</span>
       </label>
       {radios.map((radio, index) => {
         return (
@@ -83,7 +84,7 @@ const RadioField = ({ radios, fieldName }: RadioFieldProps) => {
               type="radio"
               name={`radio-${fieldName}-${index}`}
               value={radio}
-              className="radio-primary radio"
+              className="radio"
             />
             <span key={radio} className="label-text">
               {radio}
@@ -98,8 +99,8 @@ const RadioField = ({ radios, fieldName }: RadioFieldProps) => {
 const SelectField = ({ fieldName, options, inputName }: SelectdProps) => {
   return (
     <div className="form-control w-full max-w-xs">
-      <label className="label">
-        <span className="label-text">{fieldName}</span>
+      <label className="text- label">
+        <span className="badge badge-outline label-text">{fieldName}</span>
       </label>
       <select name={inputName} className="select-bordered select">
         {options.map((option) => (
@@ -115,6 +116,7 @@ const SelectField = ({ fieldName, options, inputName }: SelectdProps) => {
 export default function Scheduler() {
   const { users } = useLoaderData() as unknown as LoaderData;
   const actionData = useActionData<typeof action>();
+  console.log(SchedulerPageType);
   return (
     <div className="flex flex-col md:container md:mx-auto ">
       <Form method="post">
@@ -144,6 +146,20 @@ export default function Scheduler() {
             {
               name: "Round Robin Maximum Fairness",
               value: "round-robin-maximize-round-robin-maximize-fairness",
+            },
+          ]}
+        />
+        <SelectField
+          fieldName="Scheduling Purpose"
+          inputName="scheduling_purpose"
+          options={[
+            {
+              name: "Company",
+              value: "company",
+            },
+            {
+              name: "One to One",
+              value: "1:1",
             },
           ]}
         />

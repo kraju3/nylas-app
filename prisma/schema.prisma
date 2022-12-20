@@ -27,6 +27,7 @@ model Page {
   editToken String 
   user User @relation(fields:[accountId], references: [accountId], onDelete: Cascade, onUpdate: Cascade)
   accountId String
+  type String @default("company")
 }
 
 

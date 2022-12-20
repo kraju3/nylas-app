@@ -1,5 +1,5 @@
 import { Page, User } from "@prisma/client";
-import { useLoaderData } from "@remix-run/react";
+import { Form, useLoaderData } from "@remix-run/react";
 import { json } from "@remix-run/server-runtime";
 import { getSchedulerPages } from "~/models/page.server";
 import { getUsers } from "~/models/user.server";
@@ -14,7 +14,7 @@ type UserProps = {
 };
 
 type SchedulerProps = {
-  page: Page;
+  page: Partial<Page>;
 };
 
 export async function loader() {
@@ -50,12 +50,18 @@ function PageComponent({ page }: SchedulerProps) {
         <h2 className="card-title overflow-hidden text-ellipsis">
           {page.pageSlug}
         </h2>
-        <p className={"overflow-hidden text-ellipsis"}>{page.accountId}</p>
         <div className="card-actions justify-end">
           <div className="placeholder avatar">
-            <div className="w-24 rounded-full bg-neutral-focus text-neutral-content">
-              {page.pageId}
-            </div>
+            <Form action="/admin/redirect" method="post">
+              <input
+                hidden
+                value={`https://schedule.nylas.com/${page.pageSlug}`}
+                name="redirect_url"
+              />
+              <button type="submit" className="btn-outline btn">
+                View
+              </button>
+            </Form>
           </div>
         </div>
       </div>
@@ -63,7 +69,7 @@ function PageComponent({ page }: SchedulerProps) {
   );
 }
 
-export default function Folder() {
+export default function UsersPortal() {
   const { users, pages } = useLoaderData() as unknown as LoaderData;
   return (
     <>
@@ -81,7 +87,7 @@ export default function Folder() {
           <h2 className="text-2xl font-bold">Pages</h2>
         </div>
         {pages.map((page) => (
-          <PageComponent key={page.accountId} page={page} />
+          <PageComponent key={page.pageSlug} page={page} />
         ))}
       </div>
     </>

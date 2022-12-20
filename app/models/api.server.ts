@@ -10,6 +10,9 @@ export async function apiRequest<T>(request: APIRequest): Promise<T> {
   try {
     const apiResponse = await fetch(request.url, request.config);
     res = await apiResponse.json();
+    if (apiResponse.status >= 400) {
+      throw new Error(apiResponse.statusText);
+    }
   } catch (error: any) {
     throw Error(error);
   }
