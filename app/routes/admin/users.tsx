@@ -53,11 +53,7 @@ function PageComponent({ page }: SchedulerProps) {
         <div className="card-actions justify-end">
           <div className="placeholder avatar">
             <Form action="/admin/redirect" method="post">
-              <input
-                hidden
-                value={`https://schedule.nylas.com/${page.pageSlug}`}
-                name="redirect_url"
-              />
+              <input hidden value={page.pageSlug} name="page_slug" />
               <button type="submit" className="btn-outline btn">
                 View
               </button>

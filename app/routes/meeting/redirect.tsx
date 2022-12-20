@@ -8,7 +8,7 @@ export async function loader({ request }: LoaderArgs) {
     throw Error("Page not found");
   }
   const page = await getSchedulerPage(type);
-  const pageUrl = `https://schedule.nylas.com/${page.pageSlug}`;
+  const pageUrl = `${process.env.SCHEDULER_WEB}/${page.pageSlug}`;
 
   return redirect(pageUrl);
 }

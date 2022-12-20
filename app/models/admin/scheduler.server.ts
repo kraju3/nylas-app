@@ -4,7 +4,7 @@ import { getPrimaryCalendar } from "../events/events.server";
 import { createSchedulerPages, SchedulerPageType } from "../page.server";
 import { getUserByEmails } from "../user.server";
 
-const SCHEDULER_ENDPOINT = "https://api.schedule.nylas.com/manage/pages";
+const SCHEDULER_ENDPOINT = `${process.env.SCHEDULER_API}/manage/pages`;
 
 type SchedulerPayload = {
   name: string;
@@ -101,7 +101,6 @@ const generateSchedulerPayload = ({
         title,
       },
       locale: "en",
-      page_hostname: "schedule.nylas.com",
       reminders: [
         {
           delivery_method: "email",
