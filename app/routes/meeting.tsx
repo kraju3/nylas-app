@@ -17,7 +17,7 @@ export default function Meeting() {
                   alt="Shoes"
                 />
               </figure>
-              <Form method="get" action="/meeting/redirect">
+              <Form method="get" action="/scheduler">
                 <div className="card-body">
                   <h2 className="card-title">Company Hiring</h2>
                   <div className="card-actions justify-end">
@@ -41,7 +41,7 @@ export default function Meeting() {
                   alt="Shoes"
                 />
               </figure>
-              <Form method="get" action="/meeting/redirect">
+              <Form method="get" action="/scheduler">
                 <div className="card-body">
                   <h2 className="card-title">Meet with an Expert</h2>
                   <div className="card-actions justify-end">

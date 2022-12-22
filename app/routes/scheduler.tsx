@@ -21,8 +21,12 @@ export default function SchedulerPage() {
 
   return (
     <>
-      <div className="md:container md:mx-auto">
-        <iframe title="Scheduler Page" src={pageUrl}></iframe>
+      <div className="container h-full w-full md:mx-auto">
+        <iframe
+          className="h-full w-full"
+          title="Scheduler Page"
+          src={pageUrl}
+        ></iframe>
       </div>
     </>
   );
