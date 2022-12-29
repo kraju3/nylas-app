@@ -5,6 +5,7 @@ import { getEvent, NylasEvent, updateEvent } from "../events/events.server";
 import { getUser } from "~/session.server";
 import { format } from "date-fns";
 import { getUserByNylasId } from "../user.server";
+import { isExpired } from "~/utils";
 
 type ZoomUserResponse = {
   id: string;
@@ -15,7 +16,7 @@ type ZoomUserResponse = {
 type ZoomTokenResponse = {
   access_token: string;
   refresh_token: string;
-  expires_in: BigInt;
+  expires_in: number;
   scope: string;
 };
 
@@ -33,8 +34,6 @@ export async function authorizeZoom({
     ).toString("base64");
 
     const body = `code=${code}&grant_type=authorization_code&redirect_uri=http://localhost:3000/zoom/redirect`;
-    console.log(credential);
-    console.log(body);
 
     const zoomResponse = await apiRequest<ZoomTokenResponse>({
       url: "https://zoom.us/oauth/token",
@@ -50,12 +49,17 @@ export async function authorizeZoom({
 
     const zoomUserInfo = await getZoomUserInfo(zoomResponse.access_token);
 
+    const expiresIn = BigInt(
+      new Date().getTime() + zoomResponse.expires_in * 1000
+    );
+
     const zoomUser = {
       userId,
       email: zoomUserInfo.email,
       zoomUserId: zoomUserInfo.id,
       accessToken: zoomResponse.access_token,
       refreshToken: zoomResponse.refresh_token,
+      expires: expiresIn,
     };
 
     await createZoomAccount(zoomUser as ZoomAccount);
@@ -70,6 +74,7 @@ export async function getNewAccessToken(
   userId: string,
   refreshToken: string
 ) {
+  let account: ZoomAccount;
   try {
     const credential = Buffer.from(
       `${process.env.ZOOM_CLIENT_ID}:${process.env.ZOOM_CLIENT_SECRET}`,
@@ -96,15 +101,19 @@ export async function getNewAccessToken(
       },
     });
 
-    await updateZoomAccount({
+    const expiresIn = BigInt(new Date().getTime() + response.expires_in * 1000);
+
+    account = await updateZoomAccount({
       ...zoomAccount,
       accessToken: response.access_token,
       refreshToken: response.refresh_token,
+      expires: expiresIn,
     });
     //update db with new access token and refresh token
   } catch (error: any) {
     throw Error(error);
   }
+  return account;
 }
 
 export async function getZoomUserInfo(
@@ -146,6 +155,7 @@ export async function createZoomAccount({
   refreshToken,
   userId,
   zoomUserId,
+  expires,
 }: ZoomAccount) {
   const zoomAccount = await getZoomAccount(userId, zoomUserId);
   if (zoomAccount) {
@@ -154,6 +164,7 @@ export async function createZoomAccount({
       accessToken,
       refreshToken,
       email,
+      expires,
     });
   }
   return await prisma.zoomAccount.create({
@@ -163,6 +174,7 @@ export async function createZoomAccount({
       refreshToken,
       userId,
       zoomUserId,
+      expires,
     },
   });
 }
@@ -203,6 +215,36 @@ type ZoomMeetingResponse = {
     }[];
   };
 };
+
+export async function getZoomAccountInfo(userId: string) {
+  let zoomAccount: ZoomAccount;
+  try {
+    const account = await getZoomAccount(userId);
+
+    if (!account) {
+      throw Error("No zoom credentials present");
+    }
+
+    zoomAccount = account;
+
+    const isAccessExpired = isExpired(
+      new Date(),
+      new Date(Number(zoomAccount.expires.toString()))
+    );
+
+    if (isAccessExpired) {
+      zoomAccount = await getNewAccessToken(
+        zoomAccount.zoomUserId,
+        zoomAccount.userId,
+        zoomAccount.refreshToken
+      );
+    }
+  } catch (error) {
+    console.log(error);
+    throw Error("Token retrieval failed");
+  }
+  return zoomAccount;
+}
 
 export async function createZoomMeeting(
   zoomAccount: ZoomAccount,
@@ -266,10 +308,8 @@ export async function addZoomMeeting({
   if (!user) {
     throw Error("No user present");
   }
-  const zoomAccount = await getZoomAccount(user.id);
-  if (!zoomAccount) {
-    throw Error("No zoom credentials present");
-  }
+  const zoomAccount = await getZoomAccountInfo(user.id);
+
   const event = await getEvent(event_id, user);
 
   const zoomMeeting = await createZoomMeeting(zoomAccount, {

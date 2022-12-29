@@ -76,6 +76,14 @@ export function generateQueryString(queryParams: object) {
     .join("&");
 }
 
+export function isExpired(
+  now: Date,
+  issued: Date,
+  expirationTimeLimit = 3600000
+) {
+  return now.getTime() - issued.getTime() >= expirationTimeLimit;
+}
+
 export type UserInformation = {
   email: string;
   accountId: string;

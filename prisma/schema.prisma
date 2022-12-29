@@ -39,4 +39,5 @@ model ZoomAccount {
   accessToken String @unique
   refreshToken String @unique
   zoomUserId  String @unique
+  expires BigInt
 }
