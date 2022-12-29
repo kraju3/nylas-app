@@ -31,12 +31,28 @@ export async function loader({ request }: LoaderArgs) {
 export function ErrorBoundary({ error }: { error: any }) {
   return (
     <div className="hero min-h-screen bg-base-200">
-      <div className="hero-content flex-col lg:flex-row">
-        <img
-          alt="error page"
-          src="https://colorlib.com/wp/wp-content/uploads/sites/2/404-error-template-3.png"
-          className="max-w-sm rounded-lg shadow-2xl"
-        />
+      <div className="hero-content text-center">
+        <div className="max-w-md">
+          <h1 className="text-5xl font-bold">Oops!</h1>
+          <div className="alert alert-error shadow-lg">
+            <div>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-6 w-6 flex-shrink-0 stroke-current"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+              <span>{"Something went wrong"}</span>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
