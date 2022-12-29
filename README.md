@@ -98,3 +98,11 @@ The database seed script creates a new user with some data you can use to get st
 # User Flow
 
 - https://www.loom.com/share/cb0ab9e2cb1a494e86fb43e5f08e631b
+
+# Zoom Scheduler Flow
+
+- You will need to sign into a non-admin account (use Nylas gmail account with zoom subscription)
+- Go to http://localhost:3000/zoom
+- Sign in with Zoom. Once Authorized you will be redirected back to home screen
+- Use a scheduler page created by your Nylas Gmail account (confirmation_method:automatic). You can use a thank_you_redirect_url as http://localhost:3000/scheduler/confirmation
+- This will use the query params of event_id,account_id etc to update the event with Zoom conferencing payload

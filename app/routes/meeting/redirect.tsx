@@ -11,19 +11,17 @@ export async function loader({ request }: LoaderArgs) {
   const page = await getSchedulerPage(type);
   const pageUrl = `${process.env.SCHEDULER_WEB}/${page.pageSlug}`;
 
-  return json({
-    pageUrl,
-  });
+  return redirect(pageUrl);
 }
 
-export default function SchedulerPage() {
-  const { pageUrl } = useLoaderData();
+// export default function SchedulerPage() {
+//   const { pageUrl } = useLoaderData();
 
-  return (
-    <>
-      <div className="md:container md:mx-auto">
-        <iframe title="Scheduler Page" src={pageUrl}></iframe>
-      </div>
-    </>
-  );
-}
+//   return (
+//     <>
+//       <div className="md:container md:mx-auto">
+//         <iframe title="Scheduler Page" src={pageUrl}></iframe>
+//       </div>
+//     </>
+//   );
+// }

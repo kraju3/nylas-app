@@ -4,7 +4,7 @@ import { json } from "stream/consumers";
 import { getUser } from "~/session.server";
 import { generateQueryString } from "~/utils";
 import { apiRequest } from "../api.server";
-import { User } from "../user.server";
+import { getUserById, User } from "../user.server";
 
 const NYLAS_ENDPOINT = `${process.env.API_ENDPOINT}`;
 
@@ -118,6 +118,50 @@ export async function getEvents(
     });
   } catch (error: any) {
     throw Error(error);
+  }
+  return res;
+}
+
+export async function getEvent(eventId: string, user: User) {
+  let res: NylasEvent;
+  try {
+    res = await apiRequest({
+      url: `${NYLAS_ENDPOINT}/events/${eventId}`,
+      config: {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${user.accessToken}`,
+        },
+      },
+    });
+  } catch (error) {
+    throw Error("Error fetching Nylas Event");
+  }
+  return res;
+}
+
+export async function updateEvent(eventId: string, user: User, payload: any) {
+  let res: NylasEvent;
+  try {
+    if (!user) {
+      throw Error("no user present");
+    }
+
+    res = await apiRequest({
+      url: `${NYLAS_ENDPOINT}/events/${eventId}`,
+      config: {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${user.accessToken}`,
+        },
+        body: JSON.stringify(payload),
+      },
+    });
+  } catch (error) {
+    console.log(error);
+    throw Error("Error updating Nylas Event");
   }
   return res;
 }

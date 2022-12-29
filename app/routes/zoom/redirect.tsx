@@ -1,27 +1,27 @@
-import { LoaderArgs, MetaFunction, redirect } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
-import { authNylasUser } from "~/models/nylas.server";
-import { NylasAccount } from "~/utils";
+import { LoaderArgs, redirect } from "@remix-run/server-runtime";
+import { authorizeZoom } from "~/models/zoom/zoom.server";
 
-export const loader = async ({ request }: LoaderArgs) => {
-  try {
-    return await authNylasUser(request);
-  } catch (error: any) {
-    console.log(error);
-    return redirect("/");
+export async function loader({ request }: LoaderArgs) {
+  //code to get the code and retrieve a zoom access_token
+  const url = new URL(request.url);
+  const code = url.searchParams.get("code");
+  const userId = url.searchParams.get("state");
+  if (!code || !userId) {
+    throw Error("No code found in the URl");
   }
 
-  //return json(await fakeProductSearch(term));
-};
+  console.log("Userid", userId);
+  console.log("code", code);
 
-export const meta: MetaFunction = () => {
-  return {
-    title: "Sign Up",
-  };
-};
+  await authorizeZoom({ code, userId });
 
-export default function Index() {
-  const data = useLoaderData<NylasAccount>();
+  return redirect("/home");
+}
+
+export default function ZoomRedirect() {
+  const data = useLoaderData();
+
   return (
     <main className="relative min-h-screen bg-white sm:flex sm:items-center sm:justify-center">
       <button

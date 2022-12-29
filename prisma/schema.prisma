@@ -14,21 +14,29 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  accountId String @unique
-  accessToken String @unique
-  admin Boolean @default(false)
-  schedulerPages Page []
+  accountId      String        @unique
+  accessToken    String        @unique
+  admin          Boolean       @default(false)
+  schedulerPages Page[]
+  ZoomAccount    ZoomAccount[]
 }
 
 model Page {
-  id    String @id @default(cuid())
-  pageId Int
-  pageSlug String 
-  editToken String 
-  user User @relation(fields:[accountId], references: [accountId], onDelete: Cascade, onUpdate: Cascade)
+  id        String @id @default(cuid())
+  pageId    Int
+  pageSlug  String
+  editToken String
+  user      User   @relation(fields: [accountId], references: [accountId], onDelete: Cascade, onUpdate: Cascade)
   accountId String
-  type String @default("company")
+  type      String @default("company")
 }
 
-
-
+model ZoomAccount {
+  id          String @id @default(cuid())
+  user        User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  userId  String
+  email String
+  accessToken String @unique
+  refreshToken String @unique
+  zoomUserId  String @unique
+}

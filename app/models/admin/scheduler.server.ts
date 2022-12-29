@@ -71,7 +71,7 @@ const generateSchedulerPayload = ({
         show_timezone_options: true,
         show_week_view: true,
         submit_text: "",
-        thank_you_redirect: "",
+        thank_you_redirect: "http://localhost:3000/scheduler/confirmation",
         thank_you_text: "Thanks for scheduling",
         thank_you_text_secondary: "",
       },

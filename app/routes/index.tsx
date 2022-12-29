@@ -34,7 +34,7 @@ export async function loader({ request }: LoaderArgs) {
     scope: SCOPES.join(" "),
     access_type: "offline",
     ux_mode: "redirect",
-    redirect_uri: process.env.GOOGE_REDIRECT_URI,
+    redirect_uri: "http://localhost:3000/callback",
   });
 }
 
