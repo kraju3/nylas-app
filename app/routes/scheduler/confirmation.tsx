@@ -1,6 +1,6 @@
 import { useLoaderData } from "@remix-run/react";
-import { ActionArgs, LoaderArgs, redirect } from "@remix-run/server-runtime";
-import { addZoomMeeting } from "~/models/zoom/zoom.server";
+import { LoaderArgs, redirect } from "@remix-run/server-runtime";
+import { ZoomServiceAPI } from "~/models/zoom/zoom.server";
 
 export async function loader({ request }: LoaderArgs) {
   const url = new URL(request.url);
@@ -14,7 +14,12 @@ export async function loader({ request }: LoaderArgs) {
       throw Error("No query params present from redirect");
     }
 
-    await addZoomMeeting({ event_id, timezone, start_time, account_id });
+    await ZoomServiceAPI.addZoomMeeting({
+      event_id,
+      timezone,
+      start_time,
+      account_id,
+    });
 
     return redirect("/");
   } catch (error: any) {

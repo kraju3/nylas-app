@@ -1,6 +1,6 @@
 import { useLoaderData } from "@remix-run/react";
 import { LoaderArgs, redirect } from "@remix-run/server-runtime";
-import { authorizeZoom } from "~/models/zoom/zoom.server";
+import { ZoomServiceAPI } from "~/models/zoom/zoom.server";
 
 export async function loader({ request }: LoaderArgs) {
   //code to get the code and retrieve a zoom access_token
@@ -14,7 +14,7 @@ export async function loader({ request }: LoaderArgs) {
   console.log("Userid", userId);
   console.log("code", code);
 
-  await authorizeZoom({ code, userId });
+  await ZoomServiceAPI.authorizeZoom({ code, userId });
 
   return redirect("/home");
 }
