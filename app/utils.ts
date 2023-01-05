@@ -1,6 +1,5 @@
 import { useMatches } from "@remix-run/react";
 import { useMemo } from "react";
-
 import type { User } from "~/models/user.server";
 
 const DEFAULT_REDIRECT = "/";
@@ -74,6 +73,23 @@ export function generateQueryString(queryParams: object) {
   return Object.entries(queryParams)
     .map(([key, value]) => `${key}=${value}`)
     .join("&");
+}
+
+export function parseValuesFromJsonString<T>(
+  values: string,
+  valueToRetrieve: string
+): T {
+  const object = JSON.parse(values);
+
+  return object[valueToRetrieve];
+}
+
+export function isExpired(
+  now: Date,
+  issued: Date,
+  expirationTimeLimit = 3600000
+) {
+  return now.getTime() - issued.getTime() >= expirationTimeLimit;
 }
 
 export type UserInformation = {

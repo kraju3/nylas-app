@@ -1,6 +1,7 @@
 import { Page, User } from "@prisma/client";
 import { Form, useLoaderData } from "@remix-run/react";
-import { json } from "@remix-run/server-runtime";
+import { ActionArgs, json, redirect } from "@remix-run/server-runtime";
+import { deleteSchedulerPage } from "~/models/admin/scheduler.server";
 import { getSchedulerPages } from "~/models/page.server";
 import { getUsers } from "~/models/user.server";
 
@@ -16,6 +17,22 @@ type UserProps = {
 type SchedulerProps = {
   page: Partial<Page>;
 };
+
+export async function action({ request }: ActionArgs) {
+  const url = new URL(request.url);
+
+  const deleteScheduler = Boolean(url.searchParams.get("deleteScheduler"));
+
+  if (deleteScheduler) {
+    const body = await request.formData();
+    //   const project = await createProject(body);
+    //   return redirect(`/projects/${project.id}`);
+    const slug = body.get("page_slug") as string;
+    await deleteSchedulerPage(slug);
+  }
+
+  return redirect("/admin/users");
+}
 
 export async function loader() {
   return json<LoaderData>({
@@ -53,13 +70,19 @@ function PageComponent({ page }: SchedulerProps) {
         <div className="card-actions justify-end">
           <div className="placeholder avatar">
             <Form action="/admin/redirect" method="post">
-              <input
-                hidden
-                value={`https://schedule.nylas.com/${page.pageSlug}`}
-                name="redirect_url"
-              />
+              <input hidden value={page.pageSlug} name="page_slug" />
               <button type="submit" className="btn-outline btn">
                 View
+              </button>
+            </Form>
+            <Form
+              className="ml-2"
+              action="/admin/users?deleteScheduler=true"
+              method="post"
+            >
+              <input hidden value={page.pageSlug} name="page_slug" />
+              <button type="submit" className="btn-outline btn">
+                Delete
               </button>
             </Form>
           </div>

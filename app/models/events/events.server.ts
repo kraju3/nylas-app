@@ -1,10 +1,7 @@
-import { LoaderArgs } from "@remix-run/server-runtime";
-import { appendFile } from "fs";
-import { json } from "stream/consumers";
 import { getUser } from "~/session.server";
 import { generateQueryString } from "~/utils";
 import { apiRequest } from "../api.server";
-import { User } from "../user.server";
+import type { User } from "../user.server";
 
 const NYLAS_ENDPOINT = `${process.env.API_ENDPOINT}`;
 
@@ -88,38 +85,91 @@ type EventQueryParams = {
   participants: string;
 };
 
-export async function getEvents(
-  request: Request,
-  queryParams?: Partial<EventQueryParams>
-): Promise<NylasEvent[]> {
-  let res: NylasEvent[];
-  const user = await getUser(request);
+class EventService {
+  eventEndpoint = `${NYLAS_ENDPOINT}/events`;
 
-  if (!user) {
-    throw Error("No user access");
-  }
+  async getEvents(
+    request: Request,
+    queryParams?: Partial<EventQueryParams>
+  ): Promise<NylasEvent[]> {
+    let res: NylasEvent[];
+    const user = await getUser(request);
 
-  const queryString = generateQueryString(queryParams || {});
-  let url = `${NYLAS_ENDPOINT}/events`;
-  if (queryString) {
-    url += `?${queryString}`;
-  }
+    if (!user) {
+      throw Error("No user access");
+    }
 
-  try {
-    res = await apiRequest({
-      url,
-      config: {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${user.accessToken}`,
+    const queryString = generateQueryString(queryParams || {});
+    let url = this.eventEndpoint;
+    if (queryString) {
+      url += `?${queryString}`;
+    }
+
+    try {
+      res = await apiRequest({
+        url,
+        config: {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${user.accessToken}`,
+          },
         },
-      },
-    });
-  } catch (error: any) {
-    throw Error(error);
+      });
+    } catch (error: any) {
+      throw Error(error);
+    }
+    return res;
   }
-  return res;
+
+  async getEvent(eventId: string, user: User) {
+    let res: NylasEvent;
+    try {
+      res = await apiRequest({
+        url: `${this.eventEndpoint}/${eventId}`,
+        config: {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${user.accessToken}`,
+          },
+        },
+      });
+    } catch (error) {
+      throw Error("Error fetching Nylas Event");
+    }
+    return res;
+  }
+
+  async updateEvent(
+    eventId: string,
+    user: User,
+    payload: any,
+    notifyParticipants = false
+  ) {
+    let res: NylasEvent;
+    try {
+      if (!user) {
+        throw Error("no user present");
+      }
+
+      res = await apiRequest({
+        url: `${this.eventEndpoint}/${eventId}?notify_participants=${notifyParticipants}`,
+        config: {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${user.accessToken}`,
+          },
+          body: JSON.stringify(payload),
+        },
+      });
+    } catch (error) {
+      console.log(error);
+      throw Error("Error updating Nylas Event");
+    }
+    return res;
+  }
 }
 
 export async function getPrimaryCalendar(user: User) {
@@ -142,3 +192,5 @@ export async function getPrimaryCalendar(user: User) {
   }
   return res;
 }
+
+export const EventServiceAPI = new EventService();

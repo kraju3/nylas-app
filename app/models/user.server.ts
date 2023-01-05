@@ -10,6 +10,14 @@ export async function getUserById(id: User["id"]) {
   return prisma.user.findUnique({ where: { id } });
 }
 
+export async function getUserByNylasId(accountId: User["accountId"]) {
+  return prisma.user.findUnique({
+    where: {
+      accountId,
+    },
+  });
+}
+
 export async function getUsers() {
   return await prisma.user.findMany({
     where: {
