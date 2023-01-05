@@ -1,6 +1,7 @@
 import { getUser } from "~/session.server";
 import { generateQueryString } from "~/utils";
 import { apiRequest } from "../api.server";
+import { APIService } from "../api/service.server";
 import type { User } from "../user.server";
 
 const NYLAS_ENDPOINT = `${process.env.API_ENDPOINT}`;
@@ -85,7 +86,7 @@ type EventQueryParams = {
   participants: string;
 };
 
-class EventService {
+class EventService extends APIService<NylasEvent> {
   eventEndpoint = `${NYLAS_ENDPOINT}/events`;
 
   async getEvents(
@@ -106,16 +107,7 @@ class EventService {
     }
 
     try {
-      res = await apiRequest({
-        url,
-        config: {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${user.accessToken}`,
-          },
-        },
-      });
+      res = await this.getAll(url, user.accessToken);
     } catch (error: any) {
       throw Error(error);
     }
@@ -125,16 +117,10 @@ class EventService {
   async getEvent(eventId: string, user: User) {
     let res: NylasEvent;
     try {
-      res = await apiRequest({
-        url: `${this.eventEndpoint}/${eventId}`,
-        config: {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${user.accessToken}`,
-          },
-        },
-      });
+      res = await this.get(
+        `${this.eventEndpoint}/${eventId}`,
+        user.accessToken
+      );
     } catch (error) {
       throw Error("Error fetching Nylas Event");
     }
@@ -153,17 +139,11 @@ class EventService {
         throw Error("no user present");
       }
 
-      res = await apiRequest({
-        url: `${this.eventEndpoint}/${eventId}?notify_participants=${notifyParticipants}`,
-        config: {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${user.accessToken}`,
-          },
-          body: JSON.stringify(payload),
-        },
-      });
+      res = await this.update(
+        `${this.eventEndpoint}/${eventId}?notify_participants=${notifyParticipants}`,
+        user.accessToken,
+        payload
+      );
     } catch (error) {
       console.log(error);
       throw Error("Error updating Nylas Event");

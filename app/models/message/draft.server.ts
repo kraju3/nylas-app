@@ -1,40 +1,16 @@
+import type { User } from "@prisma/client";
 import { generateQueryString } from "~/utils";
-import { apiRequest } from "../api.server";
 import { APIService } from "../api/service.server";
-import type { User } from "../user.server";
-import type { Message, ThreadsQueryParams } from "./models.server";
+import type { Draft, ThreadsQueryParams } from "./models.server";
 
 const NYLAS_ENDPOINT = process.env.API_ENDPOINT;
 
-export async function getLabelsOrFolders<T>(
-  type: "labels" | "folders",
-  user: User
-): Promise<T> {
-  let res: T;
-  try {
-    const token = user.accessToken;
-    res = await apiRequest({
-      url: `${NYLAS_ENDPOINT}/${type}`,
-      config: {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      },
-    });
-  } catch (error: any) {
-    throw Error(error);
-  }
-  return res;
-}
-
-export class MessageService extends APIService<Message> {
-  endpoint = `${NYLAS_ENDPOINT}/messages`;
+export class DraftService extends APIService<Draft> {
+  endpoint = `${NYLAS_ENDPOINT}/drafts`;
   sendEndpoint = `${NYLAS_ENDPOINT}/send`;
 
-  async getMessages(user: User, queryParams?: Partial<ThreadsQueryParams>) {
-    let res: Message[];
+  async getDrafts(user: User, queryParams?: Partial<ThreadsQueryParams>) {
+    let res: Draft[];
     let url = `${this.endpoint}`;
     if (queryParams) {
       const queryString = generateQueryString(queryParams);
@@ -51,8 +27,8 @@ export class MessageService extends APIService<Message> {
     return res;
   }
 
-  async getMessage(user: User, id: string, queryParams?: object) {
-    let res: Message;
+  async getDraft(user: User, id: string, queryParams?: object) {
+    let res: Draft;
     let url = `${this.endpoint}/${id}`;
     if (queryParams) {
       const queryString = generateQueryString(queryParams);
@@ -69,8 +45,8 @@ export class MessageService extends APIService<Message> {
     return res;
   }
 
-  async updateMessage(user: User, id: string, payload: any) {
-    let res: Message;
+  async updateDraft(user: User, id: string, payload: any) {
+    let res: Draft;
     let url = `${this.endpoint}/${id}`;
 
     try {
@@ -85,14 +61,48 @@ export class MessageService extends APIService<Message> {
     return res;
   }
 
-  async sendMessage<T>(user: User, payload: Partial<T>) {
-    let res: Message;
+  async deleteDraft(user: User, id: string) {
+    let res: Draft;
+    let url = `${this.endpoint}/${id}`;
 
     try {
       if (!user) {
         throw Error("No user access");
       }
-      res = await this.create(this.sendEndpoint, user.accessToken, payload);
+      res = await this.delete(url, user.accessToken);
+    } catch (error: any) {
+      throw Error(error);
+    }
+
+    return res;
+  }
+
+  async createDraft(user: User, payload: Partial<Draft>) {
+    let res: Draft;
+
+    try {
+      if (!user) {
+        throw Error("No user access");
+      }
+      res = await this.create(this.endpoint, user.accessToken, payload);
+    } catch (error: any) {
+      throw Error(error);
+    }
+
+    return res;
+  }
+
+  async sendDraft(user: User, draft: Draft) {
+    let res: Draft;
+
+    try {
+      if (!user) {
+        throw Error("No user access");
+      }
+      res = await this.create(this.sendEndpoint, user.accessToken, {
+        draft_id: draft.id,
+        version: draft.version,
+      });
     } catch (error: any) {
       throw Error(error);
     }
