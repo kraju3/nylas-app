@@ -1,7 +1,11 @@
 import { Page } from "@prisma/client";
 import { apiRequest } from "../api.server";
 import { getPrimaryCalendar } from "../events/events.server";
-import { createSchedulerPages, SchedulerPageType } from "../page.server";
+import {
+  createSchedulerPages,
+  deleteSchedulerPagesBySlug,
+  SchedulerPageType,
+} from "../page.server";
 import { getUserByEmails } from "../user.server";
 
 const SCHEDULER_ENDPOINT = `${process.env.SCHEDULER_API}/manage/pages`;
@@ -64,7 +68,7 @@ const generateSchedulerPayload = ({
     config: {
       appearance: {
         color: "blue",
-        company_name: "GloPros",
+        company_name: "Nylas",
         privacy_policy_redirect: "",
         show_autoschedule: true,
         show_nylas_branding: false,
@@ -79,9 +83,9 @@ const generateSchedulerPayload = ({
         additional_fields: [],
         additional_guests_hidden: false,
         available_days_in_future: 30,
-        calendar_invite_to_guests: true,
+        calendar_invite_to_guests: false,
         cancellation_policy: "",
-        confirmation_emails_to_guests: true,
+        confirmation_emails_to_guests: false,
         confirmation_emails_to_host: true,
         confirmation_method: "automatic",
         interval_minutes: null,
@@ -175,6 +179,31 @@ export async function createNylasSchedulerPage(
     return await createSchedulerPages(pages);
   } catch (error: any) {
     console.log(error);
+    throw Error(error);
+  }
+}
+
+export async function deleteSchedulerPage(page_slug: string) {
+  try {
+    const pageesToDelete = await deleteSchedulerPagesBySlug(page_slug);
+
+    for (const page of pageesToDelete) {
+      const res: { success: boolean } = await apiRequest({
+        url: `${SCHEDULER_ENDPOINT}/${page.pageId}`,
+        config: {
+          method: "DELETE",
+          headers: {
+            Accept: "application/json",
+            Authorization: `Bearer ${page.editToken}`,
+          },
+        },
+      });
+
+      if (!res.success) {
+        throw Error(`Scheduler page with ${page.pageSlug} failed to delete`);
+      }
+    }
+  } catch (error: any) {
     throw Error(error);
   }
 }

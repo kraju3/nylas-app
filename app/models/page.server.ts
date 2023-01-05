@@ -42,3 +42,18 @@ export async function getSchedulerPage(type: SchedulerPageType) {
     },
   });
 }
+
+export async function deleteSchedulerPagesBySlug(slug: Page["pageSlug"]) {
+  const pages = await prisma.page.findMany({
+    where: {
+      pageSlug: slug,
+    },
+  });
+  await prisma.page.deleteMany({
+    where: {
+      pageSlug: slug,
+    },
+  });
+
+  return pages;
+}

@@ -4,7 +4,7 @@ import { prisma } from "~/db.server";
 import { isExpired } from "~/utils";
 import { apiRequest } from "../api.server";
 import type { NylasEvent } from "../events/events.server";
-import { getEvent, updateEvent } from "../events/events.server";
+import { EventServiceAPI } from "../events/events.server";
 import { getUserByNylasId } from "../user.server";
 
 type ZoomUserResponse = {
@@ -249,7 +249,7 @@ export class ZoomService {
     }
     const zoomAccount = await this.getZoomAccountInfo(user.id);
 
-    const event = await getEvent(event_id, user);
+    const event = await EventServiceAPI.getEvent(event_id, user);
 
     const zoomMeeting = await this.createZoomMeeting(zoomAccount, {
       event,
@@ -268,7 +268,7 @@ export class ZoomService {
       },
     };
 
-    await updateEvent(event.id, user, conferencingPayload);
+    await EventServiceAPI.updateEvent(event.id, user, conferencingPayload);
   }
 }
 
