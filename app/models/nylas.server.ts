@@ -60,7 +60,7 @@ export async function nylasAuthorizeGoogle(
       google_client_secret: GOOGLE_CLIENT_SECRET,
       google_refresh_token: refresh_token,
     },
-    scopes: ["calendar", "email", "contacts"].join(","),
+    scopes: ["calendar"].join(","),
   };
 
   let res: NylasAuthorizeResponse;

@@ -1,3 +1,5 @@
+import { SchedulerEvent } from "@prisma/client";
+import { prisma } from "~/db.server";
 import { getUser } from "~/session.server";
 import { generateQueryString } from "~/utils";
 import { apiRequest } from "../api.server";
@@ -32,23 +34,19 @@ export type NylasEvent = {
 
 type EventTime = TimeSpan | Time | DateSpan | Date;
 type TimeSpan = {
-  start_time: string;
+  start_time: number;
   end_time: number;
-  object: "timespan";
 };
 type Time = {
   time: number;
   timezone: string;
-  object: "time";
 };
 type DateSpan = {
   start_date: string;
   end_date: string;
-  object: "datespan";
 };
 type Date = {
   date: string;
-  object: "date";
 };
 
 type Recurrence = {
@@ -59,9 +57,9 @@ type Recurrence = {
 type EventParticipants = {
   name: string;
   email: string;
-  status: "yes" | "no" | "maybe" | "noreply";
+  status?: "yes" | "no" | "maybe" | "noreply";
   comment?: string;
-  phone_number: string | null;
+  phone_number?: string | null;
 };
 
 type EventQueryParams = {
@@ -170,6 +168,35 @@ class EventService {
     }
     return res;
   }
+
+  async createEvent(
+    user: User,
+    payload: Partial<NylasEvent>,
+    notifyParticipants = false
+  ) {
+    let res: NylasEvent;
+    try {
+      if (!user) {
+        throw Error("no user present");
+      }
+
+      res = await apiRequest({
+        url: `${this.eventEndpoint}?notify_participants=${notifyParticipants}`,
+        config: {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${user.accessToken}`,
+          },
+          body: JSON.stringify(payload),
+        },
+      });
+    } catch (error) {
+      console.log(error);
+      throw Error("Error creating Nylas Event");
+    }
+    return res;
+  }
 }
 
 export async function getPrimaryCalendar(user: User) {
@@ -191,6 +218,14 @@ export async function getPrimaryCalendar(user: User) {
     throw Error;
   }
   return res;
+}
+
+export class EventController {
+  static async createSchedulerEvent(event: SchedulerEvent) {
+    return await prisma.schedulerEvent.create({
+      data: event,
+    });
+  }
 }
 
 export const EventServiceAPI = new EventService();

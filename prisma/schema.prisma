@@ -19,6 +19,7 @@ model User {
   admin          Boolean       @default(false)
   schedulerPages Page[]
   ZoomAccount    ZoomAccount[]
+  Events SchedulerEvent[]
 }
 
 model Page {
@@ -40,4 +41,12 @@ model ZoomAccount {
   refreshToken String @unique
   zoomUserId  String @unique
   expires BigInt
+}
+
+model SchedulerEvent {
+  accountId String 
+  eventId String @unique
+  user User   @relation(fields: [accountId], references: [accountId], onDelete: Cascade, onUpdate: Cascade)
+  pageSlug String
+  isCancelled Boolean @default(false)
 }

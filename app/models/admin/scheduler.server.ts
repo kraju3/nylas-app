@@ -1,14 +1,26 @@
 import { Page } from "@prisma/client";
+import { parseValuesFromJsonString } from "~/utils";
 import { apiRequest } from "../api.server";
-import { getPrimaryCalendar } from "../events/events.server";
+import {
+  EventController,
+  EventServiceAPI,
+  getPrimaryCalendar,
+  NylasEvent,
+} from "../events/events.server";
 import {
   createSchedulerPages,
   deleteSchedulerPagesBySlug,
   SchedulerPageType,
 } from "../page.server";
-import { getUserByEmails } from "../user.server";
+import { getUserByEmails, getUserByNylasId } from "../user.server";
 
 const SCHEDULER_ENDPOINT = `${process.env.SCHEDULER_API}/manage/pages`;
+
+type Participants = {
+  email: string;
+  name: string;
+  status: string;
+};
 
 type SchedulerPayload = {
   name: string;
@@ -87,7 +99,7 @@ const generateSchedulerPayload = ({
         cancellation_policy: "",
         confirmation_emails_to_guests: false,
         confirmation_emails_to_host: true,
-        confirmation_method: "automatic",
+        confirmation_method: "external",
         interval_minutes: null,
         min_booking_notice: 5,
         min_buffer: 5,
@@ -206,4 +218,171 @@ export async function deleteSchedulerPage(page_slug: string) {
   } catch (error: any) {
     throw Error(error);
   }
+}
+
+export async function createSchedulerEvent(url: URL) {
+  try {
+    console.log(url.searchParams);
+    const calendar_id = url.searchParams.get("calendar_id");
+    const start_time = url.searchParams.get("start_time");
+    const account_id = url.searchParams.get("account_id");
+    const page_slug = url.searchParams.get("page_slug");
+    const end_time = url.searchParams.get("end_time");
+    const participantName = url.searchParams.get("participant_name");
+    const participantEmail = url.searchParams.get("participant_email");
+    const rescheduleEventId = url.searchParams.get("reschedule_event_id");
+    if (
+      !calendar_id ||
+      !start_time ||
+      !account_id ||
+      !end_time ||
+      !page_slug ||
+      !participantName ||
+      !participantEmail
+    ) {
+      console.debug(
+        "Missing params",
+        calendar_id,
+        account_id,
+        start_time,
+        end_time,
+        page_slug,
+        participantEmail,
+        participantName
+      );
+      throw Error("No query params present from redirect");
+    }
+
+    const user = await getUserByNylasId(account_id);
+
+    if (!user) {
+      throw Error("No user present");
+    }
+
+    const payload = {
+      title: "Remix Scheduler Confirmation External",
+      description: "This is a test event",
+      when: {
+        start_time: parseInt(start_time),
+        end_time: parseInt(end_time),
+      },
+      calendar_id,
+      ...(!rescheduleEventId && {
+        participants: [
+          {
+            name: participantName,
+            email: participantEmail,
+          },
+        ],
+      }),
+    };
+
+    let event: NylasEvent;
+
+    if (!rescheduleEventId) {
+      event = await EventServiceAPI.createEvent(user, payload, true);
+
+      await EventController.createSchedulerEvent({
+        accountId: account_id,
+        pageSlug: page_slug,
+        eventId: event.id,
+        isCancelled: false,
+      });
+    } else {
+      console.log("Rescheduling");
+      event = await EventServiceAPI.updateEvent(
+        rescheduleEventId,
+        user,
+        payload,
+        true
+      );
+    }
+
+    //here add this event to the DB and reschedule links will contain this id so the user can reschedule the event
+
+    console.log(event);
+  } catch (error) {
+    throw Error("Scheduler event couldn't be updated");
+  }
+}
+
+export async function updateSchedulerEvent(url: URL) {
+  try {
+    const event_id = url.searchParams.get("event_id");
+    const timezone = url.searchParams.get("tz");
+    const start_time = url.searchParams.get("start_time");
+    const account_id = url.searchParams.get("account_id");
+    const page_slug = url.searchParams.get("page_slug");
+    const edit_hash = url.searchParams.get("edit_hash");
+    const additional_values = url.searchParams.get("additional_values");
+    if (
+      !event_id ||
+      !timezone ||
+      !start_time ||
+      !account_id ||
+      !additional_values
+    ) {
+      throw Error("No query params present from redirect");
+    }
+
+    const user = await getUserByNylasId(account_id);
+
+    if (!user) {
+      throw Error("No user present");
+    }
+
+    const description = `<html><body>
+    <div><a href=${
+      "https://schedule.nylas.com/" +
+      page_slug +
+      "/reschedule/" +
+      edit_hash +
+      "?reschedule=true"
+    }>Reschedule </a></div>
+     <div><a href=${
+       "https://schedule.nylas.com/" + page_slug + "/cancel/" + edit_hash
+     }>Cancel </a></div>
+    </body></html>`;
+    console.log(description);
+
+    const participants = parseValuesFromJsonString<Participants[]>(
+      additional_values,
+      "participants"
+    );
+
+    console.log(participants);
+
+    const intialEvent = await EventServiceAPI.getEvent(event_id, user);
+
+    console.log(intialEvent);
+
+    const payload = {
+      title: "Remix Scheduler Event",
+      description,
+      participants: participants.map(({ name, status, email }) => ({
+        name,
+        email,
+      })),
+    };
+
+    console.log(payload);
+
+    const event = await EventServiceAPI.updateEvent(
+      event_id,
+      user,
+      payload,
+      true
+    );
+
+    console.log(event);
+  } catch (error) {
+    throw Error("Scheduler event couldn't be updated");
+  }
+
+  // await ZoomServiceAPI.addZoomMeeting({
+  //   event_id,
+  //   timezone,
+  //   start_time,
+  //   account_id,
+  // });
 }
