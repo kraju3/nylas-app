@@ -1,4 +1,5 @@
-import { Page } from "@prisma/client";
+import { Page, User } from "@prisma/client";
+import { redirect } from "@remix-run/server-runtime";
 import { parseValuesFromJsonString } from "~/utils";
 import { apiRequest } from "../api.server";
 import {
@@ -230,7 +231,7 @@ export async function createSchedulerEvent(url: URL) {
     const end_time = url.searchParams.get("end_time");
     const participantName = url.searchParams.get("participant_name");
     const participantEmail = url.searchParams.get("participant_email");
-    const rescheduleEventId = url.searchParams.get("reschedule_event_id");
+    const rescheduleEventId = url.searchParams.get("rescheduleEventId");
     if (
       !calendar_id ||
       !start_time ||
@@ -287,6 +288,9 @@ export async function createSchedulerEvent(url: URL) {
         pageSlug: page_slug,
         eventId: event.id,
         isCancelled: false,
+        title: event.title,
+        startTime: new Date(parseInt(start_time) * 1000),
+        endTime: new Date(parseInt(start_time) * 1000),
       });
     } else {
       console.log("Rescheduling");
@@ -296,6 +300,11 @@ export async function createSchedulerEvent(url: URL) {
         payload,
         true
       );
+
+      await EventController.updateSchedulerEvents(event.id, {
+        startTime: new Date(parseInt(start_time) * 1000),
+        endTime: new Date(parseInt(start_time) * 1000),
+      });
     }
 
     //here add this event to the DB and reschedule links will contain this id so the user can reschedule the event
@@ -385,4 +394,58 @@ export async function updateSchedulerEvent(url: URL) {
   //   start_time,
   //   account_id,
   // });
+}
+
+export async function deleteSchedulerEvent(
+  user: User,
+  eventId: string,
+  notify_participants = false
+) {
+  try {
+    //delete event from Nylas
+    await EventServiceAPI.deleteEvent(user, eventId, notify_participants);
+    await EventController.updateSchedulerEvents(eventId, { isCancelled: true });
+    //delete event from DB
+  } catch (error) {
+    return "/home";
+  }
+
+  return "/home/appointments";
+}
+
+export async function redirectToScheduler(
+  user: User,
+  eventId: string,
+  pageSlug: string
+) {
+  let event: NylasEvent;
+  try {
+    event = await EventServiceAPI.getEvent(eventId, user);
+  } catch (error) {
+    return "/home";
+  }
+  const participantQuery = event.participants.reduce((acc, curr) => {
+    if (curr.email !== user.email) {
+      acc += `participant_name=${curr.name}&participant_email=${curr.email}`;
+    }
+    return acc;
+  }, "") as string;
+  const url = `${process.env.SCHEDULER_WEB}/${pageSlug}?rescheduleEventId=${eventId}&${participantQuery}`;
+  return url;
+}
+
+export async function handleSchedulerEvent(
+  user: User,
+  type: "delete" | "reschedule",
+  eventId: string,
+  pageSlug: string
+) {
+  switch (type) {
+    case "delete":
+      return await deleteSchedulerEvent(user, eventId, true);
+    case "reschedule":
+      return await redirectToScheduler(user, eventId, pageSlug);
+    default:
+      return "/home";
+  }
 }

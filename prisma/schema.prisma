@@ -46,6 +46,9 @@ model ZoomAccount {
 model SchedulerEvent {
   accountId String 
   eventId String @unique
+  startTime DateTime
+  endTime DateTime
+  title String
   user User   @relation(fields: [accountId], references: [accountId], onDelete: Cascade, onUpdate: Cascade)
   pageSlug String
   isCancelled Boolean @default(false)

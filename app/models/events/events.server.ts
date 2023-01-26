@@ -1,4 +1,5 @@
 import { SchedulerEvent } from "@prisma/client";
+import { start } from "repl";
 import { prisma } from "~/db.server";
 import { getUser } from "~/session.server";
 import { generateQueryString } from "~/utils";
@@ -197,6 +198,30 @@ class EventService {
     }
     return res;
   }
+
+  async deleteEvent(user: User, eventId: string, notifyParticipants = false) {
+    let res: NylasEvent;
+    try {
+      if (!user) {
+        throw Error("no user present");
+      }
+
+      res = await apiRequest({
+        url: `${this.eventEndpoint}/${eventId}?notify_participants=${notifyParticipants}`,
+        config: {
+          method: "DELETE",
+          headers: {
+            Accept: "application/json",
+            Authorization: `Bearer ${user.accessToken}`,
+          },
+        },
+      });
+    } catch (error) {
+      console.log(error);
+      throw Error("Error creating Nylas Event");
+    }
+    return res;
+  }
 }
 
 export async function getPrimaryCalendar(user: User) {
@@ -224,6 +249,34 @@ export class EventController {
   static async createSchedulerEvent(event: SchedulerEvent) {
     return await prisma.schedulerEvent.create({
       data: event,
+    });
+  }
+
+  static async getSchedulerEvents(user: User) {
+    return await prisma.schedulerEvent.findMany({
+      where: {
+        accountId: user.accountId,
+        isCancelled: false,
+      },
+      orderBy: {
+        startTime: "asc",
+      },
+    });
+  }
+
+  static async updateSchedulerEvents(
+    eventId: string,
+    { isCancelled, startTime, endTime }: Partial<SchedulerEvent>
+  ) {
+    return await prisma.schedulerEvent.updateMany({
+      where: {
+        eventId,
+      },
+      data: {
+        ...(isCancelled !== undefined && { isCancelled }),
+        ...(startTime && { startTime }),
+        ...(endTime && { endTime }),
+      },
     });
   }
 }
